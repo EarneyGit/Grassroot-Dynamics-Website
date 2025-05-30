@@ -1,0 +1,28 @@
+{
+  "name": "grassroot-dynamics-marketing-agency",
+  "version": "1.0.0",
+  "description": "Aesthetic landing page for Indian political marketing agency Grassroot Dynamics with Matter.js physics demo",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "matter-js": "^0.19.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "political",
+    "marketing",
+    "agency",
+    "matter.js",
+    "physics",
+    "landing-page",
+    "grassroot-dynamics"
+  ],
+  "author": "Grassroot Dynamics Marketing Agency",
+  "license": "MIT"
+} 
