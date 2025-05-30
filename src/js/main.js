@@ -330,115 +330,77 @@ class PhysicsDemo {
 
     cleanupObjects() {
         const height = window.innerHeight;
+        const isMobile = window.innerWidth <= 768;
         
         this.objects = this.objects.filter(object => {
-            if (object.position.y > height + 300) {
+            // On mobile, be more lenient with cleanup to prevent objects from disappearing
+            const cleanupThreshold = isMobile ? height + 600 : height + 300;
+            
+            if (object.position.y > cleanupThreshold) {
                 Composite.remove(this.engine.world, object);
                 return false;
             }
             return true;
         });
+        
+        // On mobile, if we have fewer than 4 objects visible, respawn some
+        if (isMobile && this.objects.length < 4) {
+            this.spawnMobileObjects();
+        }
     }
 
-    addEventListeners() {
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            this.handleResize();
-        });
-
-        // Add click interaction for creating new objects
-        this.canvas.addEventListener('click', (event) => {
-            const rect = this.canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            // Count current objects by type
-            const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
-            const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
-            
-            // Choose image type based on current balance
-            let imageName;
-            if (maleCount < 8 && femaleCount < 8) {
-                // If both are under limit, choose randomly
-                imageName = Math.random() < 0.5 ? 'maleVote' : 'femaleVote';
-            } else if (maleCount < 8) {
-                imageName = 'maleVote';
-            } else if (femaleCount < 8) {
-                imageName = 'femaleVote';
-            } else {
-                // If both at limit, replace oldest object
-                const oldestObject = this.objects[0];
-                if (oldestObject) {
-                    Composite.remove(this.engine.world, oldestObject);
-                    this.objects.shift();
-                    imageName = Math.random() < 0.5 ? 'maleVote' : 'femaleVote';
-                } else {
-                    return;
-                }
-            }
-            
-            // Create a new object at click position
-            const imageObj = this.images[imageName];
-            if (imageObj) {
-                const object = this.createImageObject(x, y, imageName, imageObj);
-                
-                if (object) {
-                    object.imageName = imageName;
-                    this.objects.push(object);
-                    Composite.add(this.engine.world, object);
-                }
-            }
-        });
-
-        // Add scroll interaction
-        let ticking = false;
-        window.addEventListener('scroll', () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    this.handleScroll();
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
-
-        // Add mouse drag events for visual feedback
-        Events.on(this.mouseConstraint, 'startdrag', (event) => {
-            const body = event.body;
-            if (body && body.render && body.render.sprite) {
-                // Add visual feedback when dragging
-                body.render.sprite.xScale *= 1.1;
-                body.render.sprite.yScale *= 1.1;
-            }
-        });
-
-        Events.on(this.mouseConstraint, 'enddrag', (event) => {
-            const body = event.body;
-            if (body && body.render && body.render.sprite) {
-                // Reset scale when drag ends
-                body.render.sprite.xScale /= 1.1;
-                body.render.sprite.yScale /= 1.1;
-            }
-        });
+    spawnMobileObjects() {
+        const currentMaleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
+        const currentFemaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
+        
+        // Ensure we have at least 2 of each type on mobile
+        if (currentMaleCount < 2) {
+            this.spawnSpecificObject('maleVote');
+        }
+        if (currentFemaleCount < 2) {
+            this.spawnSpecificObject('femaleVote');
+        }
     }
 
     handleScroll() {
         const scrollY = window.scrollY;
         const maxScroll = 500;
         const scrollRatio = Math.min(scrollY / maxScroll, 1);
+        const isMobile = window.innerWidth <= 768;
         
-        // Increase gravity as user scrolls down
-        this.engine.world.gravity.y = 1.2 + (scrollRatio * 0.8);
-        
-        // Add wind effect when scrolling
-        if (scrollRatio > 0.2) {
-            this.objects.forEach(object => {
-                const windForce = {
-                    x: (Math.random() - 0.5) * 0.002 * scrollRatio,
-                    y: 0
-                };
-                Body.applyForce(object, object.position, windForce);
-            });
+        // On mobile, reduce the gravity changes and wind effects to keep objects more stable
+        if (isMobile) {
+            // Keep gravity more stable on mobile
+            this.engine.world.gravity.y = 1.2 + (scrollRatio * 0.3);
+            
+            // Reduce wind effect on mobile
+            if (scrollRatio > 0.4) {
+                this.objects.forEach(object => {
+                    const windForce = {
+                        x: (Math.random() - 0.5) * 0.001 * scrollRatio,
+                        y: 0
+                    };
+                    Body.applyForce(object, object.position, windForce);
+                });
+            }
+            
+            // On mobile, when user scrolls back to top, ensure objects are visible
+            if (scrollY < 100 && this.objects.length < 4) {
+                this.spawnMobileObjects();
+            }
+        } else {
+            // Desktop behavior (original)
+            this.engine.world.gravity.y = 1.2 + (scrollRatio * 0.8);
+            
+            if (scrollRatio > 0.2) {
+                this.objects.forEach(object => {
+                    const windForce = {
+                        x: (Math.random() - 0.5) * 0.002 * scrollRatio,
+                        y: 0
+                    };
+                    Body.applyForce(object, object.position, windForce);
+                });
+            }
         }
     }
 
@@ -505,6 +467,108 @@ class PhysicsDemo {
         if (this.engine) {
             Engine.clear(this.engine);
         }
+    }
+
+    addEventListeners() {
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.handleResize();
+        });
+
+        // Add click interaction for creating new objects
+        this.canvas.addEventListener('click', (event) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // Count current objects by type
+            const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
+            const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
+            
+            // Choose image type based on current balance
+            let imageName;
+            if (maleCount < 8 && femaleCount < 8) {
+                // If both are under limit, choose randomly
+                imageName = Math.random() < 0.5 ? 'maleVote' : 'femaleVote';
+            } else if (maleCount < 8) {
+                imageName = 'maleVote';
+            } else if (femaleCount < 8) {
+                imageName = 'femaleVote';
+            } else {
+                // If both at limit, replace oldest object
+                const oldestObject = this.objects[0];
+                if (oldestObject) {
+                    Composite.remove(this.engine.world, oldestObject);
+                    this.objects.shift();
+                    imageName = Math.random() < 0.5 ? 'maleVote' : 'femaleVote';
+                } else {
+                    return;
+                }
+            }
+            
+            // Create a new object at click position
+            const imageObj = this.images[imageName];
+            if (imageObj) {
+                const object = this.createImageObject(x, y, imageName, imageObj);
+                
+                if (object) {
+                    object.imageName = imageName;
+                    this.objects.push(object);
+                    Composite.add(this.engine.world, object);
+                }
+            }
+        });
+
+        // Add scroll interaction with mobile-specific handling
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    this.handleScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Add mobile-specific visibility check when scrolling back to hero
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            let heroSectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && this.objects.length < 4) {
+                        // Hero section is visible again, ensure we have objects
+                        setTimeout(() => {
+                            this.spawnMobileObjects();
+                        }, 500);
+                    }
+                });
+            }, { threshold: 0.3 });
+
+            const heroSection = document.querySelector('.hero');
+            if (heroSection) {
+                heroSectionObserver.observe(heroSection);
+            }
+        }
+
+        // Add mouse drag events for visual feedback
+        Events.on(this.mouseConstraint, 'startdrag', (event) => {
+            const body = event.body;
+            if (body && body.render && body.render.sprite) {
+                // Add visual feedback when dragging
+                body.render.sprite.xScale *= 1.1;
+                body.render.sprite.yScale *= 1.1;
+            }
+        });
+
+        Events.on(this.mouseConstraint, 'enddrag', (event) => {
+            const body = event.body;
+            if (body && body.render && body.render.sprite) {
+                // Reset scale when drag ends
+                body.render.sprite.xScale /= 1.1;
+                body.render.sprite.yScale /= 1.1;
+            }
+        });
     }
 }
 
