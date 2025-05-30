@@ -321,7 +321,7 @@ p {
     display: flex;
     align-items: center;
     overflow: hidden;
-    padding-top: 100px;
+    padding-top: 60px;
 }
 
 .hero-background {
@@ -1127,6 +1127,14 @@ p {
         padding: var(--spacing-md);
     }
     
+    .hero {
+        padding-top: 40px;
+    }
+    
+    .hero-title {
+        font-size: clamp(2.5rem, 10vw, 4rem);
+    }
+    
     .hero-cta {
         flex-direction: column;
         align-items: center;
@@ -1162,8 +1170,12 @@ p {
 }
 
 @media (max-width: 480px) {
+    .hero {
+        padding-top: 30px;
+    }
+    
     .hero-title {
-        font-size: clamp(2rem, 8vw, 3rem);
+        font-size: clamp(2.8rem, 12vw, 4.5rem);
     }
     
     .hero-subtitle {
