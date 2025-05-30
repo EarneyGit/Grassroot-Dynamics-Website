@@ -161,15 +161,26 @@ class PhysicsDemo {
         const width = window.innerWidth;
         const height = window.innerHeight;
         const thickness = 50;
+        const isMobile = window.innerWidth <= 768;
+
+        // Get hero section height for mobile boundary constraint
+        const heroSection = document.querySelector('.hero');
+        const heroHeight = heroSection ? heroSection.offsetHeight : height;
+        
+        // On mobile, create a floor within the hero section to keep objects visible
+        const floorY = isMobile ? heroHeight - 100 : height + thickness / 2;
+
+        console.log(`🏗️ Creating boundaries - Mobile: ${isMobile}, Hero height: ${heroHeight}, Floor Y: ${floorY}`);
 
         const boundaries = [
-            // Ground
-            Bodies.rectangle(width / 2, height + thickness / 2, width, thickness, {
+            // Ground/Floor - positioned within hero section on mobile
+            Bodies.rectangle(width / 2, floorY, width, thickness, {
                 isStatic: true,
                 render: { 
                     fillStyle: 'transparent',
                     strokeStyle: 'transparent'
-                }
+                },
+                label: 'floor'
             }),
             // Left wall
             Bodies.rectangle(-thickness / 2, height / 2, thickness, height, {
@@ -177,7 +188,8 @@ class PhysicsDemo {
                 render: { 
                     fillStyle: 'transparent',
                     strokeStyle: 'transparent'
-                }
+                },
+                label: 'leftWall'
             }),
             // Right wall
             Bodies.rectangle(width + thickness / 2, height / 2, thickness, height, {
@@ -185,11 +197,16 @@ class PhysicsDemo {
                 render: { 
                     fillStyle: 'transparent',
                     strokeStyle: 'transparent'
-                }
+                },
+                label: 'rightWall'
             })
         ];
 
         Composite.add(this.engine.world, boundaries);
+        
+        // Store boundary info for mobile reference
+        this.floorY = floorY;
+        this.heroHeight = heroHeight;
     }
 
     createImageObject(x, y, imageName, imageObj) {
@@ -198,18 +215,24 @@ class PhysicsDemo {
             return null;
         }
 
-        // Check if it's mobile view (768px or less)
+        // Check if it's mobile view (768px or less) - use consistent detection
         const isMobile = window.innerWidth <= 768;
         
-        // Calculate size based on image dimensions (scale down for physics)
+        // Fixed mobile scale - never change during session
         const baseScale = 0.15; // Base scale for desktop
-        const mobileScale = baseScale * 0.35; // 35% of base scale for mobile
+        const mobileScale = 0.08; // Smaller, consistent scale for mobile
         const scale = isMobile ? mobileScale : baseScale;
         
         const width = imageObj.width * scale;
         const height = imageObj.height * scale;
 
-        console.log(`🎨 Creating ${imageName} object at (${x}, ${y}) with size ${width}x${height}`);
+        console.log(`🎨 Creating ${imageName} object - Mobile: ${isMobile}, Scale: ${scale}, Size: ${width}x${height}`);
+
+        // On mobile, ensure spawn position is within hero boundaries
+        if (isMobile && this.heroHeight) {
+            // Clamp Y position to ensure it's within hero section
+            y = Math.min(y, this.heroHeight - 200);
+        }
 
         const body = Bodies.rectangle(x, y, width, height, {
             restitution: 0.6,
@@ -228,8 +251,10 @@ class PhysicsDemo {
         // Add some initial rotation
         Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.1);
 
-        // Store the image name on the body for tracking
+        // Store the image name and scale on the body for tracking
         body.imageName = imageName;
+        body.originalScale = scale;
+        body.isMobileObject = isMobile;
         
         console.log('✅ Created physics body:', body);
 
@@ -348,11 +373,20 @@ class PhysicsDemo {
         const initialCount = this.objects.length;
         
         this.objects = this.objects.filter(object => {
-            // On mobile, be much more lenient with cleanup to prevent objects from disappearing
-            const cleanupThreshold = isMobile ? height + 800 : height + 300;
+            // On mobile, use hero section boundary instead of screen height
+            let cleanupThreshold;
+            if (isMobile && this.heroHeight) {
+                // Keep objects that are within hero section + small buffer
+                cleanupThreshold = this.heroHeight + 200;
+            } else {
+                // Desktop behavior
+                cleanupThreshold = height + 300;
+            }
             
-            if (object.position.y > cleanupThreshold) {
-                console.log(`🗑️ Removing object at y=${Math.round(object.position.y)}, threshold=${cleanupThreshold}`);
+            const shouldRemove = object.position.y > cleanupThreshold;
+            
+            if (shouldRemove) {
+                console.log(`🗑️ Removing object at y=${Math.round(object.position.y)}, threshold=${cleanupThreshold}, heroHeight=${this.heroHeight}`);
                 Composite.remove(this.engine.world, object);
                 return false;
             }
@@ -377,24 +411,60 @@ class PhysicsDemo {
         
         console.log(`📱 Mobile check: Male=${currentMaleCount}, Female=${currentFemaleCount}, Total=${totalCount}`);
         
-        // Ensure we always have at least 2 of each type and minimum 4 total on mobile
-        if (totalCount < 4 || currentMaleCount < 1 || currentFemaleCount < 1) {
-            console.log('🚨 Mobile objects below minimum, respawning...');
-            
-            // Spawn missing male objects
-            while (this.objects.filter(obj => obj.imageName === 'maleVote').length < 2) {
-                this.spawnSpecificObject('maleVote');
+        // Only add objects if we're truly missing them, and ensure they're within hero bounds
+        const minRequired = 2;
+        
+        if (currentMaleCount < minRequired) {
+            console.log(`🔄 Adding ${minRequired - currentMaleCount} male objects`);
+            for (let i = currentMaleCount; i < minRequired; i++) {
+                this.spawnMobileObject('maleVote');
             }
-            
-            // Spawn missing female objects  
-            while (this.objects.filter(obj => obj.imageName === 'femaleVote').length < 2) {
-                this.spawnSpecificObject('femaleVote');
+        }
+        
+        if (currentFemaleCount < minRequired) {
+            console.log(`🔄 Adding ${minRequired - currentFemaleCount} female objects`);
+            for (let i = currentFemaleCount; i < minRequired; i++) {
+                this.spawnMobileObject('femaleVote');
+            }
+        }
+    }
+
+    spawnMobileObject(imageName) {
+        const width = window.innerWidth;
+        const heroHeight = this.heroHeight || window.innerHeight;
+        
+        // Spawn within hero section boundaries
+        const x = Math.random() * (width - 200) + 100;
+        const y = Math.random() * 100 + 50; // Near top of hero section
+        
+        console.log(`📱 Spawning mobile ${imageName} at (${x}, ${y}) within hero height ${heroHeight}`);
+        
+        const imageObj = this.images[imageName];
+        if (imageObj) {
+            const object = this.createImageObject(x, y, imageName, imageObj);
+            if (object) {
+                this.objects.push(object);
+                Composite.add(this.engine.world, object);
             }
         }
     }
 
     spawnMobileObjects() {
         console.log('🔄 Mobile respawn triggered');
+        
+        // Clear any objects that might be outside hero bounds first
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile && this.heroHeight) {
+            this.objects = this.objects.filter(object => {
+                if (object.position.y > this.heroHeight + 100) {
+                    console.log(`🗑️ Removing out-of-bounds object at y=${Math.round(object.position.y)}`);
+                    Composite.remove(this.engine.world, object);
+                    return false;
+                }
+                return true;
+            });
+        }
+        
         this.ensureMobileObjects();
     }
 
@@ -443,6 +513,9 @@ class PhysicsDemo {
     handleResize() {
         const width = window.innerWidth;
         const height = window.innerHeight;
+        const isMobile = width <= 768;
+
+        console.log(`📱 Resize detected - Mobile: ${isMobile}, Size: ${width}x${height}`);
 
         // Update canvas size
         this.canvas.width = width;
@@ -458,39 +531,17 @@ class PhysicsDemo {
 
         // Remove old boundaries
         const allBodies = Composite.allBodies(this.engine.world);
-        const boundaries = allBodies.filter(body => body.isStatic);
+        const boundaries = allBodies.filter(body => 
+            body.label === 'floor' || body.label === 'leftWall' || body.label === 'rightWall'
+        );
         Composite.remove(this.engine.world, boundaries);
 
-        // Create new boundaries
+        // Create new boundaries with proper hero section awareness
         this.createBoundaries();
 
-        // Check if we need to resize existing objects (mobile vs desktop)
-        const isMobile = width <= 768;
-        const baseScale = 0.15;
-        const mobileScale = baseScale * 0.35;
-        const newScale = isMobile ? mobileScale : baseScale;
-
-        // Update existing objects with new scale if needed
-        this.objects.forEach(object => {
-            if (object.render && object.render.sprite) {
-                const currentScale = object.render.sprite.xScale;
-                const expectedScale = newScale;
-                
-                // Only update if scale is significantly different (to avoid constant updates)
-                if (Math.abs(currentScale - expectedScale) > 0.01) {
-                    object.render.sprite.xScale = expectedScale;
-                    object.render.sprite.yScale = expectedScale;
-                    
-                    // Update physics body size
-                    const imageObj = this.images[object.imageName];
-                    if (imageObj) {
-                        const newWidth = imageObj.width * expectedScale;
-                        const newHeight = imageObj.height * expectedScale;
-                        Body.scale(object, newWidth / (object.bounds.max.x - object.bounds.min.x), newHeight / (object.bounds.max.y - object.bounds.min.y));
-                    }
-                }
-            }
-        });
+        // Don't resize existing objects during resize to maintain consistency
+        // Objects will be recreated with correct scale if needed through normal spawning
+        console.log(`🔄 Resize complete - keeping ${this.objects.length} existing objects with original scales`);
     }
 
     destroy() {
