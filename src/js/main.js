@@ -237,8 +237,11 @@ class PhysicsDemo {
     }
 
     startObjectSpawning() {
-        // Spawn initial objects - 4 of each type
-        for (let i = 0; i < 8; i++) {
+        const isMobile = window.innerWidth <= 768;
+        const initialCount = isMobile ? 4 : 8; // Fewer objects on mobile for better performance
+        
+        // Spawn initial objects
+        for (let i = 0; i < initialCount; i++) {
             setTimeout(() => {
                 // Alternate between male and female images for initial spawn
                 const imageName = i % 2 === 0 ? 'maleVote' : 'femaleVote';
@@ -258,23 +261,32 @@ class PhysicsDemo {
             }, i * 800); // Slower initial spawn
         }
 
-        // Continue spawning objects periodically to maintain 16 total (8 of each type)
+        // Continue spawning objects periodically with mobile-specific logic
         setInterval(() => {
+            const currentIsMobile = window.innerWidth <= 768;
+            const maxObjects = currentIsMobile ? 4 : 16; // Maintain fewer objects on mobile
+            const minMale = currentIsMobile ? 2 : 8;
+            const minFemale = currentIsMobile ? 2 : 8;
+            
             // Count current objects by type
             const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
             const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
             
+            console.log(`📱 Mobile: ${currentIsMobile}, Objects: Male=${maleCount}, Female=${femaleCount}, Total=${this.objects.length}`);
+            
             // Spawn based on what's needed to maintain balance
-            if (maleCount < 8) {
+            if (maleCount < minMale) {
                 this.spawnSpecificObject('maleVote');
+                console.log('🔄 Spawning male vote object');
             }
-            if (femaleCount < 8) {
+            if (femaleCount < minFemale) {
                 this.spawnSpecificObject('femaleVote');
+                console.log('🔄 Spawning female vote object');
             }
             
             // Clean up objects that have fallen off screen
             this.cleanupObjects();
-        }, 2500); // Spawn every 2.5 seconds
+        }, currentIsMobile ? 3000 : 2500); // Slightly slower spawning on mobile
     }
 
     spawnSpecificObject(imageName) {
@@ -332,34 +344,58 @@ class PhysicsDemo {
         const height = window.innerHeight;
         const isMobile = window.innerWidth <= 768;
         
+        // Store initial count for debugging
+        const initialCount = this.objects.length;
+        
         this.objects = this.objects.filter(object => {
-            // On mobile, be more lenient with cleanup to prevent objects from disappearing
-            const cleanupThreshold = isMobile ? height + 600 : height + 300;
+            // On mobile, be much more lenient with cleanup to prevent objects from disappearing
+            const cleanupThreshold = isMobile ? height + 800 : height + 300;
             
             if (object.position.y > cleanupThreshold) {
+                console.log(`🗑️ Removing object at y=${Math.round(object.position.y)}, threshold=${cleanupThreshold}`);
                 Composite.remove(this.engine.world, object);
                 return false;
             }
             return true;
         });
         
-        // On mobile, if we have fewer than 4 objects visible, respawn some
-        if (isMobile && this.objects.length < 4) {
-            this.spawnMobileObjects();
+        const removedCount = initialCount - this.objects.length;
+        if (removedCount > 0) {
+            console.log(`🧹 Cleaned up ${removedCount} objects. Remaining: ${this.objects.length}`);
+        }
+        
+        // On mobile, ensure we always have minimum objects and respawn immediately if needed
+        if (isMobile) {
+            this.ensureMobileObjects();
+        }
+    }
+
+    ensureMobileObjects() {
+        const currentMaleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
+        const currentFemaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
+        const totalCount = this.objects.length;
+        
+        console.log(`📱 Mobile check: Male=${currentMaleCount}, Female=${currentFemaleCount}, Total=${totalCount}`);
+        
+        // Ensure we always have at least 2 of each type and minimum 4 total on mobile
+        if (totalCount < 4 || currentMaleCount < 1 || currentFemaleCount < 1) {
+            console.log('🚨 Mobile objects below minimum, respawning...');
+            
+            // Spawn missing male objects
+            while (this.objects.filter(obj => obj.imageName === 'maleVote').length < 2) {
+                this.spawnSpecificObject('maleVote');
+            }
+            
+            // Spawn missing female objects  
+            while (this.objects.filter(obj => obj.imageName === 'femaleVote').length < 2) {
+                this.spawnSpecificObject('femaleVote');
+            }
         }
     }
 
     spawnMobileObjects() {
-        const currentMaleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
-        const currentFemaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
-        
-        // Ensure we have at least 2 of each type on mobile
-        if (currentMaleCount < 2) {
-            this.spawnSpecificObject('maleVote');
-        }
-        if (currentFemaleCount < 2) {
-            this.spawnSpecificObject('femaleVote');
-        }
+        console.log('🔄 Mobile respawn triggered');
+        this.ensureMobileObjects();
     }
 
     handleScroll() {
@@ -534,21 +570,53 @@ class PhysicsDemo {
         // Add mobile-specific visibility check when scrolling back to hero
         const isMobile = window.innerWidth <= 768;
         if (isMobile) {
+            console.log('📱 Setting up mobile-specific observers...');
+            
+            // Enhanced intersection observer for hero section
             let heroSectionObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && this.objects.length < 4) {
+                    console.log(`👁️ Hero section intersection: ${entry.isIntersecting ? 'VISIBLE' : 'HIDDEN'}, objects: ${this.objects.length}`);
+                    
+                    if (entry.isIntersecting) {
                         // Hero section is visible again, ensure we have objects
+                        console.log('🎯 Hero section is visible, checking objects...');
+                        
+                        // Immediate check
+                        this.ensureMobileObjects();
+                        
+                        // Delayed check to handle any timing issues
                         setTimeout(() => {
-                            this.spawnMobileObjects();
-                        }, 500);
+                            this.ensureMobileObjects();
+                        }, 1000);
                     }
                 });
-            }, { threshold: 0.3 });
+            }, { 
+                threshold: 0.1, // Trigger earlier
+                rootMargin: '50px' // Add some buffer
+            });
 
             const heroSection = document.querySelector('.hero');
             if (heroSection) {
                 heroSectionObserver.observe(heroSection);
+                console.log('✅ Hero section observer attached');
             }
+            
+            // Additional scroll-based check for mobile
+            let mobileScrollCheck = null;
+            window.addEventListener('scroll', () => {
+                if (mobileScrollCheck) clearTimeout(mobileScrollCheck);
+                
+                mobileScrollCheck = setTimeout(() => {
+                    const scrollY = window.scrollY;
+                    const heroHeight = heroSection ? heroSection.offsetHeight : window.innerHeight;
+                    
+                    // If we're in the hero section area (top 1.5 screens)
+                    if (scrollY < heroHeight * 1.5) {
+                        console.log(`📍 Mobile scroll check at y=${scrollY}, ensuring objects...`);
+                        this.ensureMobileObjects();
+                    }
+                }, 500); // Check 500ms after scroll stops
+            });
         }
 
         // Add mouse drag events for visual feedback
