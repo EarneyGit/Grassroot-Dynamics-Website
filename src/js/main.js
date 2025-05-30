@@ -553,6 +553,12 @@ class Navigation {
                         behavior: 'smooth'
                     });
                 }
+                
+                // Auto-close mobile menu when a link is clicked
+                if (this.navMenu && this.navMenu.classList.contains('active')) {
+                    this.navMenu.classList.remove('active');
+                    this.hamburger.classList.remove('active');
+                }
             });
         });
     }
@@ -562,6 +568,24 @@ class Navigation {
             this.hamburger.addEventListener('click', () => {
                 this.navMenu.classList.toggle('active');
                 this.hamburger.classList.toggle('active');
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                const isClickInsideNav = this.navMenu.contains(e.target) || this.hamburger.contains(e.target);
+                
+                if (!isClickInsideNav && this.navMenu.classList.contains('active')) {
+                    this.navMenu.classList.remove('active');
+                    this.hamburger.classList.remove('active');
+                }
+            });
+            
+            // Close mobile menu when pressing Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.navMenu.classList.contains('active')) {
+                    this.navMenu.classList.remove('active');
+                    this.hamburger.classList.remove('active');
+                }
             });
         }
     }
