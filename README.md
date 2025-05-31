@@ -1,6 +1,6 @@
-# Grassroot Dynamics - Political Marketing Agency
+# Grassroots Dynamics - Political Marketing Agency
 
-A modern, interactive website for Grassroot Dynamics, a political marketing agency specializing in data-driven campaign strategies across India.
+A modern, interactive website for Grassroots Dynamics, a political marketing agency specializing in data-driven campaign strategies across India.
 
 ## 🌟 Features
 
@@ -119,7 +119,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-**Grassroot Dynamics**
+**Grassroots Dynamics**
 - Email: info@grassrootdynamics.com
 - Phone: +91 98765 43210
 - Location: New Delhi, India

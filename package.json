@@ -1,7 +1,8 @@
 {
-  "name": "grassroot-dynamics-marketing-agency",
+  "name": "grassroots-dynamics-marketing-agency",
+  "private": true,
   "version": "1.0.0",
-  "description": "Aesthetic landing page for Indian political marketing agency Grassroot Dynamics with Matter.js physics demo",
+  "description": "Aesthetic landing page for Indian political marketing agency Grassroots Dynamics with Matter.js physics demo",
   "main": "index.html",
   "scripts": {
     "dev": "vite",
@@ -21,8 +22,8 @@
     "matter.js",
     "physics",
     "landing-page",
-    "grassroot-dynamics"
+    "grassroots-dynamics"
   ],
-  "author": "Grassroot Dynamics Marketing Agency",
+  "author": "Grassroots Dynamics Marketing Agency",
   "license": "MIT"
 } 

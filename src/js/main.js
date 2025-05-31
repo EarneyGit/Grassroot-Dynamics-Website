@@ -14,6 +14,8 @@ class PhysicsDemo {
         this.isInitialized = false;
         this.images = {};
         this.imageLoadPromises = [];
+        this.spawnInterval = null; // Track the spawn interval
+        this.maxObjects = 16; // Fixed maximum
         
         // Don't auto-initialize, wait for explicit call
     }
@@ -161,20 +163,13 @@ class PhysicsDemo {
         const width = window.innerWidth;
         const height = window.innerHeight;
         const thickness = 50;
-        const isMobile = window.innerWidth <= 768;
 
-        // Get hero section height for mobile boundary constraint
-        const heroSection = document.querySelector('.hero');
-        const heroHeight = heroSection ? heroSection.offsetHeight : height;
+        console.log(`🏗️ Creating simple boundaries - Screen: ${width}x${height}`);
         
-        // On mobile, create a floor within the hero section to keep objects visible
-        const floorY = isMobile ? heroHeight - 100 : height + thickness / 2;
-
-        console.log(`🏗️ Creating boundaries - Mobile: ${isMobile}, Hero height: ${heroHeight}, Floor Y: ${floorY}`);
-
+        // Simple boundary system - same for all screen sizes
         const boundaries = [
-            // Ground/Floor - positioned within hero section on mobile
-            Bodies.rectangle(width / 2, floorY, width, thickness, {
+            // Floor at bottom of screen
+            Bodies.rectangle(width / 2, height + thickness / 2, width, thickness, {
                 isStatic: true,
                 render: { 
                     fillStyle: 'transparent',
@@ -203,10 +198,7 @@ class PhysicsDemo {
         ];
 
         Composite.add(this.engine.world, boundaries);
-        
-        // Store boundary info for mobile reference
-        this.floorY = floorY;
-        this.heroHeight = heroHeight;
+        console.log('✅ Simple boundaries created');
     }
 
     createImageObject(x, y, imageName, imageObj) {
@@ -215,24 +207,14 @@ class PhysicsDemo {
             return null;
         }
 
-        // Check if it's mobile view (768px or less) - use consistent detection
+        // Simple scaling based on screen size - slightly larger for mobile
         const isMobile = window.innerWidth <= 768;
-        
-        // Fixed mobile scale - never change during session
-        const baseScale = 0.15; // Base scale for desktop
-        const mobileScale = 0.08; // Smaller, consistent scale for mobile
-        const scale = isMobile ? mobileScale : baseScale;
+        const scale = isMobile ? 0.05 : 0.12; // Slightly larger for mobile, larger for desktop
         
         const width = imageObj.width * scale;
         const height = imageObj.height * scale;
 
-        console.log(`🎨 Creating ${imageName} object - Mobile: ${isMobile}, Scale: ${scale}, Size: ${width}x${height}`);
-
-        // On mobile, ensure spawn position is within hero boundaries
-        if (isMobile && this.heroHeight) {
-            // Clamp Y position to ensure it's within hero section
-            y = Math.min(y, this.heroHeight - 200);
-        }
+        console.log(`🎨 Creating ${imageName} - Mobile: ${isMobile}, Scale: ${scale}, Size: ${width}x${height}`);
 
         const body = Bodies.rectangle(x, y, width, height, {
             restitution: 0.6,
@@ -254,7 +236,6 @@ class PhysicsDemo {
         // Store the image name and scale on the body for tracking
         body.imageName = imageName;
         body.originalScale = scale;
-        body.isMobileObject = isMobile;
         
         console.log('✅ Created physics body:', body);
 
@@ -262,20 +243,24 @@ class PhysicsDemo {
     }
 
     startObjectSpawning() {
-        const isMobile = window.innerWidth <= 768;
-        const initialCount = isMobile ? 4 : 8; // Fewer objects on mobile for better performance
+        // Clear any existing interval first
+        if (this.spawnInterval) {
+            clearInterval(this.spawnInterval);
+            this.spawnInterval = null;
+        }
+
+        console.log('🚀 Starting simple object spawning...');
         
-        // Spawn initial objects
-        for (let i = 0; i < initialCount; i++) {
+        // Spawn 16 objects immediately (8 male + 8 female)
+        for (let i = 0; i < 16; i++) {
             setTimeout(() => {
-                // Alternate between male and female images for initial spawn
-                const imageName = i % 2 === 0 ? 'maleVote' : 'femaleVote';
+                const imageName = i < 8 ? 'maleVote' : 'femaleVote';
                 const imageObj = this.images[imageName];
                 
                 if (imageObj) {
                     const width = window.innerWidth;
-                    const x = Math.random() * (width - 200) + 100;
-                    const y = -100 - (i * 50); // Stagger the initial spawn heights
+                    const x = Math.random() * (width - 100) + 50;
+                    const y = -100 - (i * 30); // Spawn from above screen
                     
                     const object = this.createImageObject(x, y, imageName, imageObj);
                     if (object) {
@@ -283,110 +268,23 @@ class PhysicsDemo {
                         Composite.add(this.engine.world, object);
                     }
                 }
-            }, i * 800); // Slower initial spawn
+            }, i * 200); // Stagger spawning
         }
 
-        // Continue spawning objects periodically with mobile-specific logic
-        setInterval(() => {
-            const currentIsMobile = window.innerWidth <= 768;
-            const maxObjects = currentIsMobile ? 4 : 16; // Maintain fewer objects on mobile
-            const minMale = currentIsMobile ? 2 : 8;
-            const minFemale = currentIsMobile ? 2 : 8;
-            
-            // Count current objects by type
-            const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
-            const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
-            
-            console.log(`📱 Mobile: ${currentIsMobile}, Objects: Male=${maleCount}, Female=${femaleCount}, Total=${this.objects.length}`);
-            
-            // Spawn based on what's needed to maintain balance
-            if (maleCount < minMale) {
-                this.spawnSpecificObject('maleVote');
-                console.log('🔄 Spawning male vote object');
-            }
-            if (femaleCount < minFemale) {
-                this.spawnSpecificObject('femaleVote');
-                console.log('🔄 Spawning female vote object');
-            }
-            
-            // Clean up objects that have fallen off screen
-            this.cleanupObjects();
-        }, currentIsMobile ? 3000 : 2500); // Slightly slower spawning on mobile
+        // Set up simple maintenance - just maintain 16 objects
+        this.spawnInterval = setInterval(() => {
+            this.maintainObjectCount();
+        }, 3000);
     }
 
-    spawnSpecificObject(imageName) {
-        const width = window.innerWidth;
-        const x = Math.random() * (width - 200) + 100;
-        const y = -100; // Start above the screen
-        
-        const imageObj = this.images[imageName];
-        if (!imageObj) return;
-
-        const object = this.createImageObject(x, y, imageName, imageObj);
-        
-        if (object) {
-            // Store the image name for tracking
-            object.imageName = imageName;
-            this.objects.push(object);
-            Composite.add(this.engine.world, object);
-        }
-    }
-
-    spawnRandomObject() {
-        // Count current objects by type
-        const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
-        const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
-        
-        // Choose image type based on current balance
-        let imageName;
-        if (maleCount < 8 && femaleCount < 8) {
-            // If both are under limit, choose randomly
-            imageName = Math.random() < 0.5 ? 'maleVote' : 'femaleVote';
-        } else if (maleCount < 8) {
-            imageName = 'maleVote';
-        } else if (femaleCount < 8) {
-            imageName = 'femaleVote';
-        } else {
-            return; // Both types at limit
-        }
-
-        const width = window.innerWidth;
-        const x = Math.random() * (width - 200) + 100;
-        const y = -100; // Start above the screen
-
-        const imageObj = this.images[imageName];
-        const object = this.createImageObject(x, y, imageName, imageObj);
-        
-        if (object) {
-            // Store the image name for tracking
-            object.imageName = imageName;
-            this.objects.push(object);
-            Composite.add(this.engine.world, object);
-        }
-    }
-
-    cleanupObjects() {
+    maintainObjectCount() {
+        // Clean up objects that have fallen off screen
         const height = window.innerHeight;
-        const isMobile = window.innerWidth <= 768;
-        
-        // Store initial count for debugging
         const initialCount = this.objects.length;
         
         this.objects = this.objects.filter(object => {
-            // On mobile, use hero section boundary instead of screen height
-            let cleanupThreshold;
-            if (isMobile && this.heroHeight) {
-                // Keep objects that are within hero section + small buffer
-                cleanupThreshold = this.heroHeight + 200;
-            } else {
-                // Desktop behavior
-                cleanupThreshold = height + 300;
-            }
-            
-            const shouldRemove = object.position.y > cleanupThreshold;
-            
-            if (shouldRemove) {
-                console.log(`🗑️ Removing object at y=${Math.round(object.position.y)}, threshold=${cleanupThreshold}, heroHeight=${this.heroHeight}`);
+            if (object.position.y > height + 200) {
+                console.log(`🗑️ Removing object at y=${Math.round(object.position.y)}`);
                 Composite.remove(this.engine.world, object);
                 return false;
             }
@@ -398,115 +296,79 @@ class PhysicsDemo {
             console.log(`🧹 Cleaned up ${removedCount} objects. Remaining: ${this.objects.length}`);
         }
         
-        // On mobile, ensure we always have minimum objects and respawn immediately if needed
-        if (isMobile) {
-            this.ensureMobileObjects();
-        }
-    }
-
-    ensureMobileObjects() {
-        const currentMaleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
-        const currentFemaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
+        // Count objects by type
+        const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
+        const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
         const totalCount = this.objects.length;
         
-        console.log(`📱 Mobile check: Male=${currentMaleCount}, Female=${currentFemaleCount}, Total=${totalCount}`);
+        console.log(`📊 Object count: Male=${maleCount}, Female=${femaleCount}, Total=${totalCount}/16`);
         
-        // Only add objects if we're truly missing them, and ensure they're within hero bounds
-        const minRequired = 2;
-        
-        if (currentMaleCount < minRequired) {
-            console.log(`🔄 Adding ${minRequired - currentMaleCount} male objects`);
-            for (let i = currentMaleCount; i < minRequired; i++) {
-                this.spawnMobileObject('maleVote');
+        // Only spawn if we have less than 16 total objects
+        if (totalCount < 16) {
+            // Determine what type to spawn based on balance
+            if (maleCount < 8 && totalCount < 16) {
+                this.spawnSingleObject('maleVote');
+                console.log('🔄 Spawned 1 male vote object');
+            } else if (femaleCount < 8 && totalCount < 16) {
+                this.spawnSingleObject('femaleVote');
+                console.log('🔄 Spawned 1 female vote object');
             }
         }
         
-        if (currentFemaleCount < minRequired) {
-            console.log(`🔄 Adding ${minRequired - currentFemaleCount} female objects`);
-            for (let i = currentFemaleCount; i < minRequired; i++) {
-                this.spawnMobileObject('femaleVote');
+        // Safety check: remove excess objects if somehow we have too many
+        if (totalCount > 16) {
+            console.log(`⚠️ Too many objects (${totalCount}), removing excess...`);
+            const excessCount = totalCount - 16;
+            for (let i = 0; i < excessCount; i++) {
+                const objectToRemove = this.objects.pop();
+                if (objectToRemove) {
+                    Composite.remove(this.engine.world, objectToRemove);
+                }
             }
         }
     }
 
-    spawnMobileObject(imageName) {
+    spawnSingleObject(imageName) {
+        // Safety check: don't spawn if we already have 16 objects
+        if (this.objects.length >= 16) {
+            console.log(`🚫 Not spawning ${imageName} - already have ${this.objects.length} objects`);
+            return;
+        }
+        
         const width = window.innerWidth;
-        const heroHeight = this.heroHeight || window.innerHeight;
-        
-        // Spawn within hero section boundaries
-        const x = Math.random() * (width - 200) + 100;
-        const y = Math.random() * 100 + 50; // Near top of hero section
-        
-        console.log(`📱 Spawning mobile ${imageName} at (${x}, ${y}) within hero height ${heroHeight}`);
+        const x = Math.random() * (width - 100) + 50;
+        const y = -100; // Always spawn from top
         
         const imageObj = this.images[imageName];
-        if (imageObj) {
-            const object = this.createImageObject(x, y, imageName, imageObj);
-            if (object) {
-                this.objects.push(object);
-                Composite.add(this.engine.world, object);
-            }
-        }
-    }
+        if (!imageObj) return;
 
-    spawnMobileObjects() {
-        console.log('🔄 Mobile respawn triggered');
+        const object = this.createImageObject(x, y, imageName, imageObj);
         
-        // Clear any objects that might be outside hero bounds first
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile && this.heroHeight) {
-            this.objects = this.objects.filter(object => {
-                if (object.position.y > this.heroHeight + 100) {
-                    console.log(`🗑️ Removing out-of-bounds object at y=${Math.round(object.position.y)}`);
-                    Composite.remove(this.engine.world, object);
-                    return false;
-                }
-                return true;
-            });
+        if (object) {
+            object.imageName = imageName;
+            this.objects.push(object);
+            Composite.add(this.engine.world, object);
+            console.log(`✨ Spawned new ${imageName} object (Total: ${this.objects.length}/16)`);
         }
-        
-        this.ensureMobileObjects();
     }
 
     handleScroll() {
         const scrollY = window.scrollY;
         const maxScroll = 500;
         const scrollRatio = Math.min(scrollY / maxScroll, 1);
-        const isMobile = window.innerWidth <= 768;
         
-        // On mobile, reduce the gravity changes and wind effects to keep objects more stable
-        if (isMobile) {
-            // Keep gravity more stable on mobile
-            this.engine.world.gravity.y = 1.2 + (scrollRatio * 0.3);
-            
-            // Reduce wind effect on mobile
-            if (scrollRatio > 0.4) {
-                this.objects.forEach(object => {
-                    const windForce = {
-                        x: (Math.random() - 0.5) * 0.001 * scrollRatio,
-                        y: 0
-                    };
-                    Body.applyForce(object, object.position, windForce);
-                });
-            }
-            
-            // On mobile, when user scrolls back to top, ensure objects are visible
-            if (scrollY < 100 && this.objects.length < 4) {
-                this.spawnMobileObjects();
-            }
-        } else {
-            // Desktop behavior (original)
-            this.engine.world.gravity.y = 1.2 + (scrollRatio * 0.8);
-            
-            if (scrollRatio > 0.2) {
-                this.objects.forEach(object => {
-                    const windForce = {
-                        x: (Math.random() - 0.5) * 0.002 * scrollRatio,
-                        y: 0
-                    };
-                    Body.applyForce(object, object.position, windForce);
-                });
-            }
+        // Simple gravity adjustment based on scroll
+        this.engine.world.gravity.y = 1.2 + (scrollRatio * 0.5);
+        
+        // Add some wind effect when scrolled
+        if (scrollRatio > 0.3) {
+            this.objects.forEach(object => {
+                const windForce = {
+                    x: (Math.random() - 0.5) * 0.001 * scrollRatio,
+                    y: 0
+                };
+                Body.applyForce(object, object.position, windForce);
+            });
         }
     }
 
@@ -529,22 +391,47 @@ class PhysicsDemo {
         this.render.canvas.width = width;
         this.render.canvas.height = height;
 
-        // Remove old boundaries
+        // Remove old boundaries and create new ones
         const allBodies = Composite.allBodies(this.engine.world);
         const boundaries = allBodies.filter(body => 
             body.label === 'floor' || body.label === 'leftWall' || body.label === 'rightWall'
         );
         Composite.remove(this.engine.world, boundaries);
 
-        // Create new boundaries with proper hero section awareness
+        // Create new boundaries
         this.createBoundaries();
 
-        // Don't resize existing objects during resize to maintain consistency
-        // Objects will be recreated with correct scale if needed through normal spawning
-        console.log(`🔄 Resize complete - keeping ${this.objects.length} existing objects with original scales`);
+        // Simple rescaling of existing objects
+        if (this.objects.length > 0) {
+            this.objects.forEach(object => {
+                if (object.render && object.render.sprite) {
+                    // Update scale based on current screen size - slightly larger for mobile
+                    const newScale = isMobile ? 0.05 : 0.12;
+                    object.render.sprite.xScale = newScale;
+                    object.render.sprite.yScale = newScale;
+                    object.originalScale = newScale;
+                    
+                    // Keep objects within screen bounds
+                    if (object.position.x > width - 50) {
+                        Body.setPosition(object, { x: width - 75, y: object.position.y });
+                    }
+                    if (object.position.x < 50) {
+                        Body.setPosition(object, { x: 75, y: object.position.y });
+                    }
+                }
+            });
+        }
+
+        console.log(`🔄 Resize complete - Current objects: ${this.objects.length}/16`);
     }
 
     destroy() {
+        // Clean up intervals
+        if (this.spawnInterval) {
+            clearInterval(this.spawnInterval);
+            this.spawnInterval = null;
+        }
+        
         if (this.render) {
             Render.stop(this.render);
         }
@@ -557,9 +444,34 @@ class PhysicsDemo {
     }
 
     addEventListeners() {
-        // Handle window resize
+        // Handle window resize with debouncing
+        let resizeTimeout;
         window.addEventListener('resize', () => {
-            this.handleResize();
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.handleResize();
+            }, 150); // Debounce resize events
+        });
+
+        // Handle orientation change specifically for mobile devices
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                console.log('📱 Orientation changed - refreshing physics demo');
+                this.handleResize();
+            }, 500); // Wait for orientation change to complete
+        });
+
+        // Enhanced visibility change handler to ensure objects persist
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('👁️ Page became visible - checking objects');
+                // Only check if we have very few objects
+                if (this.objects.length < 8) {
+                    setTimeout(() => {
+                        this.maintainObjectCount();
+                    }, 1000);
+                }
+            }
         });
 
         // Add click interaction for creating new objects
@@ -567,6 +479,9 @@ class PhysicsDemo {
             const rect = this.canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
+            
+            // Only allow click spawning if we're under the limit
+            if (this.objects.length >= this.maxObjects) return;
             
             // Count current objects by type
             const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
@@ -582,15 +497,7 @@ class PhysicsDemo {
             } else if (femaleCount < 8) {
                 imageName = 'femaleVote';
             } else {
-                // If both at limit, replace oldest object
-                const oldestObject = this.objects[0];
-                if (oldestObject) {
-                    Composite.remove(this.engine.world, oldestObject);
-                    this.objects.shift();
-                    imageName = Math.random() < 0.5 ? 'maleVote' : 'femaleVote';
-                } else {
-                    return;
-                }
+                return; // Both at limit, don't spawn
             }
             
             // Create a new object at click position
@@ -618,57 +525,34 @@ class PhysicsDemo {
             }
         });
 
-        // Add mobile-specific visibility check when scrolling back to hero
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-            console.log('📱 Setting up mobile-specific observers...');
-            
-            // Enhanced intersection observer for hero section
+        // Simplified responsive observer - no spawning, just logging
+        const setupResponsiveObserver = () => {
+            const heroSection = document.querySelector('.hero');
+            if (!heroSection) return;
+
+            // Simple intersection observer for monitoring only
             let heroSectionObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    console.log(`👁️ Hero section intersection: ${entry.isIntersecting ? 'VISIBLE' : 'HIDDEN'}, objects: ${this.objects.length}`);
+                    const currentIsMobile = window.innerWidth <= 768;
+                    console.log(`👁️ Hero section: ${entry.isIntersecting ? 'VISIBLE' : 'HIDDEN'}, objects: ${this.objects.length}/${this.maxObjects}, mobile: ${currentIsMobile}`);
                     
-                    if (entry.isIntersecting) {
-                        // Hero section is visible again, ensure we have objects
-                        console.log('🎯 Hero section is visible, checking objects...');
-                        
-                        // Immediate check
-                        this.ensureMobileObjects();
-                        
-                        // Delayed check to handle any timing issues
-                        setTimeout(() => {
-                            this.ensureMobileObjects();
-                        }, 1000);
+                    // Only do emergency spawning if we have very few objects
+                    if (entry.isIntersecting && this.objects.length < 4) {
+                        console.log('🚨 Emergency: Very few objects, triggering spawn...');
+                        this.maintainObjectCount();
                     }
                 });
             }, { 
-                threshold: 0.1, // Trigger earlier
-                rootMargin: '50px' // Add some buffer
+                threshold: 0.1,
+                rootMargin: '50px'
             });
 
-            const heroSection = document.querySelector('.hero');
-            if (heroSection) {
-                heroSectionObserver.observe(heroSection);
-                console.log('✅ Hero section observer attached');
-            }
-            
-            // Additional scroll-based check for mobile
-            let mobileScrollCheck = null;
-            window.addEventListener('scroll', () => {
-                if (mobileScrollCheck) clearTimeout(mobileScrollCheck);
-                
-                mobileScrollCheck = setTimeout(() => {
-                    const scrollY = window.scrollY;
-                    const heroHeight = heroSection ? heroSection.offsetHeight : window.innerHeight;
-                    
-                    // If we're in the hero section area (top 1.5 screens)
-                    if (scrollY < heroHeight * 1.5) {
-                        console.log(`📍 Mobile scroll check at y=${scrollY}, ensuring objects...`);
-                        this.ensureMobileObjects();
-                    }
-                }, 500); // Check 500ms after scroll stops
-            });
-        }
+            heroSectionObserver.observe(heroSection);
+            console.log('✅ Simplified hero section observer attached');
+        };
+
+        // Setup responsive observer
+        setupResponsiveObserver();
 
         // Add mouse drag events for visual feedback
         Events.on(this.mouseConstraint, 'startdrag', (event) => {
@@ -713,7 +597,7 @@ class Navigation {
             if (window.scrollY > 50) {
                 this.navbar.style.background = 'rgba(15, 15, 15, 0.98)';
                 this.navbar.style.transform = 'translateX(-50%) scale(0.95)';
-                this.navbar.style.borderColor = 'rgba(255, 107, 53, 0.4)';
+                this.navbar.style.borderColor = 'rgba(230, 57, 70, 0.4)';
             } else {
                 this.navbar.style.background = 'rgba(20, 20, 20, 0.95)';
                 this.navbar.style.transform = 'translateX(-50%) scale(1)';
@@ -894,7 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    console.log('🎯 Grassroot Dynamics - Political Marketing Agency Website Loaded!');
+    console.log('🎯 Grassroots Dynamics - Political Marketing Agency Website Loaded!');
     console.log('🚀 Matter.js Physics Demo with PNG Images Active');
     console.log('✨ Interactive falling PNG objects ready');
 }); 

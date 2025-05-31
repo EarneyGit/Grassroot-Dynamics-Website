@@ -6,9 +6,9 @@
 }
 
 :root {
-    /* Colors */
-    --primary-color: #ff6b35;
-    --secondary-color: #f7931e;
+    /* Colors - Using Grassroots red from logo */
+    --primary-color: #e63946;
+    --secondary-color: #d62d20;
     --accent-color: #ffd700;
     --text-primary: #ffffff;
     --text-secondary: #b0b0b0;
@@ -45,11 +45,11 @@
     --border-radius-xl: 1rem;
     --border-radius-2xl: 1.5rem;
     
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(255, 107, 53, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(255, 107, 53, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(255, 107, 53, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(255, 107, 53, 0.1);
+    /* Shadows - Updated to use Grassroots red */
+    --shadow-sm: 0 1px 2px 0 rgba(230, 57, 70, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(230, 57, 70, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(230, 57, 70, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(230, 57, 70, 0.1);
     --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
     
     /* Transitions */
@@ -165,7 +165,7 @@ p {
 
 .navbar:hover {
     background: rgba(20, 20, 20, 0.98);
-    border-color: rgba(255, 107, 53, 0.3);
+    border-color: rgba(230, 57, 70, 0.3);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -177,6 +177,14 @@ p {
     max-width: none;
     margin: 0;
     height: 100%;
+}
+
+/* Nav Logo Container */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    min-width: 150px; /* Ensure minimum space for logo */
 }
 
 .nav-logo h2 {
@@ -210,7 +218,7 @@ p {
 
 .nav-link:hover {
     color: var(--text-primary);
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(230, 57, 70, 0.1);
 }
 
 .nav-link::after {
@@ -242,7 +250,7 @@ p {
 }
 
 .hamburger:hover {
-    background: rgba(255, 107, 53, 0.15);
+    background: rgba(230, 57, 70, 0.15);
     transform: scale(1.05);
 }
 
@@ -299,8 +307,8 @@ p {
 }
 
 .nav-menu.active .nav-link:hover {
-    border-color: rgba(255, 107, 53, 0.3);
-    background: rgba(255, 107, 53, 0.1);
+    border-color: rgba(230, 57, 70, 0.3);
+    background: rgba(230, 57, 70, 0.1);
 }
 
 @keyframes slideDown {
@@ -317,7 +325,7 @@ p {
 /* Hero Section */
 .hero {
     position: relative;
-    min-height: 100vh;
+    height: 100vh; /* Full viewport height for all screen sizes */
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -357,7 +365,7 @@ p {
         135deg,
         rgba(0, 0, 0, 0.7) 0%,
         rgba(0, 0, 0, 0.4) 50%,
-        rgba(255, 107, 53, 0.1) 100%
+        rgba(230, 57, 70, 0.1) 100%
     );
     z-index: 2;
     pointer-events: none;
@@ -432,7 +440,7 @@ p {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 50%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+    background: radial-gradient(circle at 20% 50%, rgba(230, 57, 70, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(247, 147, 30, 0.1) 0%, transparent 50%);
     pointer-events: none;
 }
@@ -496,7 +504,7 @@ p {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(230, 57, 70, 0.1), transparent);
     transition: left 0.6s ease;
 }
 
@@ -507,7 +515,7 @@ p {
 .service-card:hover {
     transform: translateY(-10px) scale(1.02);
     border-color: var(--primary-color);
-    box-shadow: 0 20px 40px rgba(255, 107, 53, 0.2);
+    box-shadow: 0 20px 40px rgba(230, 57, 70, 0.2);
 }
 
 .service-icon {
@@ -525,7 +533,7 @@ p {
     overflow: hidden;
     margin: 0 auto var(--spacing-md) auto;
     box-shadow: 
-        0 10px 25px rgba(255, 107, 53, 0.3),
+        0 10px 25px rgba(230, 57, 70, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.2),
         inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 }
@@ -575,10 +583,10 @@ p {
 .service-card:hover .service-icon {
     transform: translateY(-5px) scale(1.1) rotateX(15deg) rotateY(5deg);
     box-shadow: 
-        0 20px 40px rgba(255, 107, 53, 0.4),
+        0 20px 40px rgba(230, 57, 70, 0.4),
         inset 0 2px 0 rgba(255, 255, 255, 0.3),
         inset 0 -2px 0 rgba(0, 0, 0, 0.15),
-        0 0 30px rgba(255, 107, 53, 0.6);
+        0 0 30px rgba(230, 57, 70, 0.6);
 }
 
 .service-card:hover .service-icon::before {
@@ -595,23 +603,23 @@ p {
     filter: 
         drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))
         drop-shadow(0 0 20px rgba(255, 255, 255, 0.4))
-        drop-shadow(0 0 40px rgba(255, 107, 53, 0.3));
+        drop-shadow(0 0 40px rgba(230, 57, 70, 0.3));
 }
 
 /* Add pulse animation for extra appeal */
 @keyframes iconPulse {
     0%, 100% {
         box-shadow: 
-            0 10px 25px rgba(255, 107, 53, 0.3),
+            0 10px 25px rgba(230, 57, 70, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.2),
             inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     }
     50% {
         box-shadow: 
-            0 15px 30px rgba(255, 107, 53, 0.4),
+            0 15px 30px rgba(230, 57, 70, 0.4),
             inset 0 2px 0 rgba(255, 255, 255, 0.3),
             inset 0 -2px 0 rgba(0, 0, 0, 0.15),
-            0 0 20px rgba(255, 107, 53, 0.4);
+            0 0 20px rgba(230, 57, 70, 0.4);
     }
 }
 
@@ -651,7 +659,7 @@ p {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 70% 80%, rgba(255, 107, 53, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(230, 57, 70, 0.05) 0%, transparent 50%),
         radial-gradient(circle at 30% 20%, rgba(247, 147, 30, 0.05) 0%, transparent 50%);
     pointer-events: none;
 }
@@ -701,7 +709,7 @@ p {
 .portfolio-item:hover {
     transform: translateY(-8px);
     border-color: var(--primary-color);
-    box-shadow: 0 15px 35px rgba(255, 107, 53, 0.15);
+    box-shadow: 0 15px 35px rgba(230, 57, 70, 0.15);
 }
 
 .portfolio-item h3 {
@@ -753,7 +761,7 @@ p {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 20% 30%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 20% 30%, rgba(230, 57, 70, 0.08) 0%, transparent 50%),
         radial-gradient(circle at 80% 70%, rgba(247, 147, 30, 0.08) 0%, transparent 50%);
     pointer-events: none;
 }
@@ -850,7 +858,7 @@ p {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 60% 20%, rgba(255, 107, 53, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 60% 20%, rgba(230, 57, 70, 0.06) 0%, transparent 50%),
         radial-gradient(circle at 40% 80%, rgba(247, 147, 30, 0.06) 0%, transparent 50%);
     pointer-events: none;
 }
@@ -911,7 +919,7 @@ p {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
     transform: translateY(-2px);
 }
 
@@ -1107,6 +1115,10 @@ p {
         padding: 0 var(--spacing-md);
     }
     
+    .nav-logo {
+        min-width: 120px; /* Adjust for mobile */
+    }
+    
     .nav-logo h2 {
         font-size: 1.1rem;
     }
@@ -1129,6 +1141,7 @@ p {
     
     .hero {
         padding-top: 40px;
+        height: 100vh; /* Ensure full viewport height on mobile */
     }
     
     .hero-title {
@@ -1167,11 +1180,21 @@ p {
     .footer-links {
         justify-content: center;
     }
+
+    /* Mobile Logo Image Styles */
+    .logo-image {
+        height: 32px;
+    }
+    
+    .footer-logo-image {
+        height: 28px;
+    }
 }
 
 @media (max-width: 480px) {
     .hero {
         padding-top: 30px;
+        height: 100vh; /* Ensure full viewport height on smallest screens */
     }
     
     .hero-title {
@@ -1209,4 +1232,33 @@ p {
 .mb-3 { margin-bottom: var(--spacing-md); }
 .mb-4 { margin-bottom: var(--spacing-lg); }
 
-.accent { color: var(--primary-color); } 
+.accent { color: var(--primary-color); }
+
+/* Logo Image Styles */
+.logo-image {
+    height: 40px;
+    width: auto;
+    transition: all var(--transition-normal);
+    filter: brightness(1);
+    display: block;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+.logo-image:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+}
+
+.footer-logo-image {
+    height: 35px;
+    width: auto;
+    margin-bottom: var(--spacing-xs);
+    filter: brightness(0.9);
+    transition: all var(--transition-normal);
+}
+
+.footer-logo-image:hover {
+    filter: brightness(1);
+    transform: scale(1.02);
+} 
