@@ -742,8 +742,11 @@ class BackToTopButton {
 
     init() {
         if (this.button) {
+            console.log('✅ Back to Top button found and initialized');
             this.addScrollListener();
             this.addClickListener();
+        } else {
+            console.warn('⚠️ Back to Top button not found');
         }
     }
 
@@ -775,27 +778,45 @@ class BackToTopButton {
     addClickListener() {
         this.button.addEventListener('click', (e) => {
             e.preventDefault();
+            console.log('🔝 Back to top button clicked');
             this.scrollToTop();
         });
     }
 
     scrollToTop() {
-        const scrollDuration = 800;
-        const scrollStep = -window.scrollY / (scrollDuration / 15);
-        
-        const scrollInterval = setInterval(() => {
-            if (window.scrollY !== 0) {
-                window.scrollBy(0, scrollStep);
-            } else {
-                clearInterval(scrollInterval);
-            }
-        }, 15);
-        
-        // Alternative smooth scroll for modern browsers
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        // Use the modern smooth scroll API with fallback
+        if ('scrollBehavior' in document.documentElement.style) {
+            // Modern browsers with smooth scroll support
+            window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: 'smooth'
+            });
+        } else {
+            // Fallback for older browsers
+            const scrollDuration = 600;
+            const startPosition = window.pageYOffset;
+            const startTime = performance.now();
+            
+            const animateScroll = (currentTime) => {
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / scrollDuration, 1);
+                
+                // Easing function for smooth animation
+                const easeInOutCubic = (t) => {
+                    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+                };
+                
+                const scrollPosition = startPosition * (1 - easeInOutCubic(progress));
+                window.scrollTo(0, scrollPosition);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                }
+            };
+            
+            requestAnimationFrame(animateScroll);
+        }
     }
 }
 
