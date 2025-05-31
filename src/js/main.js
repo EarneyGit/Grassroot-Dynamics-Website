@@ -1,6 +1,4 @@
-import * as Matter from 'matter-js';
-
-// Matter.js module aliases
+// Matter.js module aliases (using global Matter object from CDN)
 const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events, Body, Vector } = Matter;
 
 class PhysicsDemo {
@@ -735,6 +733,72 @@ class AnimationObserver {
     }
 }
 
+// Back to Top Button functionality
+class BackToTopButton {
+    constructor() {
+        this.button = document.getElementById('back-to-top');
+        this.init();
+    }
+
+    init() {
+        if (this.button) {
+            this.addScrollListener();
+            this.addClickListener();
+        }
+    }
+
+    addScrollListener() {
+        let ticking = false;
+        
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    this.toggleVisibility();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+    }
+
+    toggleVisibility() {
+        const scrollPosition = window.pageYOffset;
+        const windowHeight = window.innerHeight;
+        
+        if (scrollPosition > windowHeight * 0.3) {
+            this.button.classList.add('visible');
+        } else {
+            this.button.classList.remove('visible');
+        }
+    }
+
+    addClickListener() {
+        this.button.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.scrollToTop();
+        });
+    }
+
+    scrollToTop() {
+        const scrollDuration = 800;
+        const scrollStep = -window.scrollY / (scrollDuration / 15);
+        
+        const scrollInterval = setInterval(() => {
+            if (window.scrollY !== 0) {
+                window.scrollBy(0, scrollStep);
+            } else {
+                clearInterval(scrollInterval);
+            }
+        }, 15);
+        
+        // Alternative smooth scroll for modern browsers
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+}
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🌟 DOM Content Loaded - Initializing website...');
@@ -754,6 +818,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize animation observer
     const animationObserver = new AnimationObserver();
+    
+    // Initialize back to top button
+    const backToTopButton = new BackToTopButton();
     
     // Add some interactive button effects
     const buttons = document.querySelectorAll('.btn-primary, .btn-secondary');
