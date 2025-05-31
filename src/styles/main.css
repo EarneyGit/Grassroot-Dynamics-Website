@@ -483,13 +483,15 @@ p {
     border-radius: var(--border-radius-2xl);
     padding: var(--spacing-xl);
     text-align: center;
-    transition: all var(--transition-normal);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-glass);
     opacity: 0;
     transform: translateY(50px);
     animation: slideInUp 0.6s ease-out forwards;
+    perspective: 1000px;
+    transform-style: preserve-3d;
 }
 
 .service-card:nth-child(1) { animation-delay: 0.1s; }
@@ -513,9 +515,12 @@ p {
 }
 
 .service-card:hover {
-    transform: translateY(-10px) scale(1.02);
+    transform: translateY(-15px) translateZ(50px) rotateX(8deg) rotateY(5deg) scale(1.05);
     border-color: var(--primary-color);
-    box-shadow: 0 20px 40px rgba(230, 57, 70, 0.2);
+    box-shadow: 
+        0 25px 50px rgba(230, 57, 70, 0.25),
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .service-icon {
@@ -677,13 +682,15 @@ p {
     border: 1px solid var(--glass-border);
     border-radius: var(--border-radius-2xl);
     padding: var(--spacing-xl);
-    transition: all var(--transition-normal);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-glass);
     opacity: 0;
     transform: translateY(50px);
     animation: slideInUp 0.6s ease-out forwards;
+    perspective: 1000px;
+    transform-style: preserve-3d;
 }
 
 .portfolio-item:nth-child(1) { animation-delay: 0.1s; }
@@ -707,9 +714,12 @@ p {
 }
 
 .portfolio-item:hover {
-    transform: translateY(-8px);
+    transform: translateY(-12px) translateZ(40px) rotateX(6deg) rotateY(-3deg) scale(1.03);
     border-color: var(--primary-color);
-    box-shadow: 0 15px 35px rgba(230, 57, 70, 0.15);
+    box-shadow: 
+        0 20px 40px rgba(230, 57, 70, 0.2),
+        0 8px 16px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .portfolio-item h3 {
@@ -796,13 +806,15 @@ p {
     border-radius: var(--border-radius-xl);
     padding: var(--spacing-lg);
     text-align: center;
-    transition: all var(--transition-normal);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-glass);
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(50px);
     animation: slideInUp 0.6s ease-out forwards;
+    perspective: 1000px;
+    transform-style: preserve-3d;
 }
 
 .feature:nth-child(1) { animation-delay: 0.2s; }
@@ -815,19 +827,23 @@ p {
     top: 0;
     left: 0;
     width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    transform: scaleX(0);
-    transition: transform var(--transition-normal);
+    height: 100%;
+    background: linear-gradient(135deg, rgba(230, 57, 70, 0.05), rgba(247, 147, 30, 0.05));
+    opacity: 0;
+    transition: opacity var(--transition-normal);
 }
 
 .feature:hover::before {
-    transform: scaleX(1);
+    opacity: 1;
 }
 
 .feature:hover {
-    transform: translateY(-5px);
+    transform: translateY(-10px) translateZ(30px) rotateX(5deg) rotateY(2deg) scale(1.02);
     border-color: var(--primary-color);
+    box-shadow: 
+        0 15px 30px rgba(230, 57, 70, 0.15),
+        0 6px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .feature h4 {
@@ -942,11 +958,12 @@ p {
     border-radius: var(--border-radius-xl);
     padding: var(--spacing-lg);
     text-align: center;
-    transition: all var(--transition-normal);
-    box-shadow: var(--shadow-glass);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     opacity: 0;
     transform: translateY(30px);
     animation: slideInUp 0.6s ease-out forwards;
+    perspective: 1000px;
+    transform-style: preserve-3d;
 }
 
 .contact-item:nth-child(1) { animation-delay: 0.2s; }
@@ -954,8 +971,12 @@ p {
 .contact-item:nth-child(3) { animation-delay: 0.6s; }
 
 .contact-item:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px) translateZ(25px) rotateX(4deg) rotateY(1deg) scale(1.02);
     border-color: var(--primary-color);
+    box-shadow: 
+        0 12px 25px rgba(230, 57, 70, 0.12),
+        0 5px 10px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .contact-item h4 {
