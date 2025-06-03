@@ -1,0 +1,43 @@
+{
+  "rewrites": [
+    {
+      "source": "/campaigns/dmk-2016",
+      "destination": "/campaigns/dmk-2016.html"
+    },
+    {
+      "source": "/campaigns/iuml-2019",
+      "destination": "/campaigns/iuml-2019.html"
+    },
+    {
+      "source": "/campaigns/iuml-2021",
+      "destination": "/campaigns/iuml-2021.html"
+    },
+    {
+      "source": "/campaigns/inc-2023",
+      "destination": "/campaigns/inc-2023.html"
+    },
+    {
+      "source": "/campaigns/iuml-ijk-2024",
+      "destination": "/campaigns/iuml-ijk-2024.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+} 
