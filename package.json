@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "vite",
-    "build": "echo 'Build completed - static files ready for deployment'",
+    "build": "node scripts/build.js",
     "preview": "vite preview"
   },
   "dependencies": {
