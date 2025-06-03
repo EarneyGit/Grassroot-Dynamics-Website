@@ -1,24 +1,55 @@
 {
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/campaigns/dmk-2016",
-      "destination": "/campaigns/dmk-2016.html"
+      "src": "**/*.html",
+      "use": "@vercel/static"
     },
     {
-      "source": "/campaigns/iuml-2019",
-      "destination": "/campaigns/iuml-2019.html"
+      "src": "**/*.css",
+      "use": "@vercel/static"
     },
     {
-      "source": "/campaigns/iuml-2021",
-      "destination": "/campaigns/iuml-2021.html"
+      "src": "**/*.js",
+      "use": "@vercel/static"
     },
     {
-      "source": "/campaigns/inc-2023",
-      "destination": "/campaigns/inc-2023.html"
+      "src": "**/*.png",
+      "use": "@vercel/static"
     },
     {
-      "source": "/campaigns/iuml-ijk-2024",
-      "destination": "/campaigns/iuml-ijk-2024.html"
+      "src": "**/*.jpg",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.svg",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/campaigns/dmk-2016",
+      "dest": "/campaigns/dmk-2016.html"
+    },
+    {
+      "src": "/campaigns/iuml-2019",
+      "dest": "/campaigns/iuml-2019.html"
+    },
+    {
+      "src": "/campaigns/iuml-2021",
+      "dest": "/campaigns/iuml-2021.html"
+    },
+    {
+      "src": "/campaigns/inc-2023",
+      "dest": "/campaigns/inc-2023.html"
+    },
+    {
+      "src": "/campaigns/iuml-ijk-2024",
+      "dest": "/campaigns/iuml-ijk-2024.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
   "headers": [

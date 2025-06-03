@@ -1,29 +1,25 @@
 {
-  "name": "grassroots-dynamics-marketing-agency",
-  "private": true,
+  "name": "grassroots-dynamics-website",
   "version": "1.0.0",
-  "description": "Aesthetic landing page for Indian political marketing agency Grassroots Dynamics with Matter.js physics demo",
+  "description": "Political strategy and campaign management website for Grassroots Dynamics",
   "main": "index.html",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "echo 'Static site build complete'",
     "preview": "vite preview"
   },
   "dependencies": {
     "matter-js": "^0.19.0"
   },
+  "keywords": [
+    "political-strategy",
+    "campaign-management",
+    "grassroots-dynamics",
+    "static-site"
+  ],
+  "author": "Grassroots Dynamics",
+  "license": "MIT",
   "devDependencies": {
     "vite": "^5.0.0"
-  },
-  "keywords": [
-    "political",
-    "marketing",
-    "agency",
-    "matter.js",
-    "physics",
-    "landing-page",
-    "grassroots-dynamics"
-  ],
-  "author": "Grassroots Dynamics Marketing Agency",
-  "license": "MIT"
+  }
 } 
