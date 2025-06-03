@@ -295,8 +295,8 @@ class PhysicsDemo {
         }
         
         // Count objects by type
-        const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
-        const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
+            const maleCount = this.objects.filter(obj => obj.imageName === 'maleVote').length;
+            const femaleCount = this.objects.filter(obj => obj.imageName === 'femaleVote').length;
         const totalCount = this.objects.length;
         
         console.log(`📊 Object count: Male=${maleCount}, Female=${femaleCount}, Total=${totalCount}/16`);
@@ -311,8 +311,8 @@ class PhysicsDemo {
                 this.spawnSingleObject('femaleVote');
                 console.log('🔄 Spawned 1 female vote object');
             }
-        }
-        
+            }
+            
         // Safety check: remove excess objects if somehow we have too many
         if (totalCount > 16) {
             console.log(`⚠️ Too many objects (${totalCount}), removing excess...`);
@@ -367,7 +367,7 @@ class PhysicsDemo {
                 };
                 Body.applyForce(object, object.position, windForce);
             });
-        }
+    }
     }
 
     handleResize() {
@@ -428,7 +428,7 @@ class PhysicsDemo {
         if (this.spawnInterval) {
             clearInterval(this.spawnInterval);
             this.spawnInterval = null;
-        }
+            }
         
         if (this.render) {
             Render.stop(this.render);
@@ -455,7 +455,7 @@ class PhysicsDemo {
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 console.log('📱 Orientation changed - refreshing physics demo');
-                this.handleResize();
+            this.handleResize();
             }, 500); // Wait for orientation change to complete
         });
 
