@@ -1573,7 +1573,7 @@ p {
 .mb-3 { margin-bottom: var(--spacing-md); }
 .mb-4 { margin-bottom: var(--spacing-lg); }
 
-.accent { color: var(--primary-color); }
+.accent { color: var(--primary-color); } 
 
 /* Logo Image Styles */
 .logo-image {
@@ -2096,7 +2096,7 @@ p {
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--border-radius-xl);
-    padding: 0;
+    padding: var(--spacing-lg);
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
@@ -2104,7 +2104,7 @@ p {
     animation: fadeInUp 0.8s ease-out forwards;
     display: flex;
     flex-direction: column;
-    min-height: 450px;
+    min-height: 280px;
 }
 
 .campaign-block:nth-child(1) { animation-delay: 0.1s; }
@@ -2131,6 +2131,27 @@ p {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+.campaign-meta {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.campaign-year,
+.campaign-region {
+    background: linear-gradient(135deg, 
+        rgba(230, 57, 70, 0.1) 0%, 
+        rgba(255, 71, 87, 0.05) 100%);
+    border: 1px solid rgba(230, 57, 70, 0.2);
+    border-radius: var(--border-radius-sm);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    backdrop-filter: blur(10px);
 }
 
 .campaign-block::after {
